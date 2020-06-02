@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "26563562269",
+    "firebase_url": "https://myhero-8778b.firebaseio.com",
+    "project_id": "myhero-8778b",
+    "storage_bucket": "myhero-8778b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26563562269:android:8edac1d558882e67f9aff4",
+        "android_client_info": {
+          "package_name": "com.example.bemyhero"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "26563562269-13c9bfl5tqk45042pjn34dtmhl9bedli.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bemyhero",
+            "certificate_hash": "fa495de911aed2a4623d1c00623b8e147accd83e"
+          }
+        },
+        {
+          "client_id": "26563562269-cjf3k3klelotnac15uhtbk4sk06o587p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtFvAzFMDaJPsFciNIFlFk6Fyh-1drih4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "26563562269-cjf3k3klelotnac15uhtbk4sk06o587p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
