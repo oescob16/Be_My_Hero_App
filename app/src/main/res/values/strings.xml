@@ -9,4 +9,6 @@
     <string name="logout">Logout</string>
     <string name="friends">Friends</string>
     <string name="add_new_post">Add New Post</string>
+    <string name="drawer_open">Drawer Open</string>
+    <string name="drawer_close">Drawer Close</string>
 </resources>
