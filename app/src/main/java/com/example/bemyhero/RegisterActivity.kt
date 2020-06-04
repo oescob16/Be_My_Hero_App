@@ -61,7 +61,6 @@ class RegisterActivity : AppCompatActivity() {
         }
         else {
 
-            // ERROR Fix it.
             val builder: AlertDialog.Builder = AlertDialog.Builder(this@RegisterActivity)
             builder.setCancelable(false)
             builder.setView(R.layout.loading_dialog)
