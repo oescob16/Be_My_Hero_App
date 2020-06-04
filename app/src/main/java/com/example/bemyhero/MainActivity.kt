@@ -1,5 +1,6 @@
 package com.example.bemyhero
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 
 import android.os.Bundle
@@ -12,6 +13,9 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import java.net.Authenticator
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,11 +24,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
     private lateinit var postList: RecyclerView
     private lateinit var mToolbar: Toolbar
+    
+    private lateinit var mAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mAuth = FirebaseAuth.getInstance()
 
         mToolbar = findViewById(R.id.main_page_toolbar)
         setSupportActionBar(mToolbar)
@@ -38,10 +46,25 @@ class MainActivity : AppCompatActivity() {
         navigationView = findViewById(R.id.navigation_view)
         var navView: View = navigationView.inflateHeaderView(R.layout.navigation_header)
 
-        navigationView.setNavigationItemSelectedListener( NavigationView.OnNavigationItemSelectedListener { menuItem ->
+        navigationView.setNavigationItemSelectedListener { menuItem ->
             userMenuSelector(menuItem)
             false
-        })
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val currentUser: FirebaseUser? =  mAuth.currentUser
+        if(currentUser == null){
+            SendUserToLoginActivity()
+        }
+    }
+
+    private fun SendUserToLoginActivity(){
+        val loginIntent: Intent = Intent(this@MainActivity,LoginActivity::class.java)
+        loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(loginIntent)
+        finish()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -73,7 +96,8 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this,"Settings",Toast.LENGTH_SHORT).show()
             }
             R.id.nav_logout -> {
-                Toast.makeText(this,"Logout",Toast.LENGTH_SHORT).show()
+                mAuth.signOut()
+                SendUserToLoginActivity()
             }
         }
     }
