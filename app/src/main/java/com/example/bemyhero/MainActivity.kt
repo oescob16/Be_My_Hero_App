@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.widget.CheckBox
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.annotation.NonNull
@@ -15,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.*
+import java.lang.ref.PhantomReference
 import java.net.Authenticator
 
 class MainActivity : AppCompatActivity() {
@@ -26,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mToolbar: Toolbar
     
     private lateinit var mAuth: FirebaseAuth
+    private lateinit var userRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -33,6 +37,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         mAuth = FirebaseAuth.getInstance()
+        userRef = FirebaseDatabase.getInstance().getReference().child("Users")
 
         mToolbar = findViewById(R.id.main_page_toolbar)
         setSupportActionBar(mToolbar)
@@ -58,7 +63,37 @@ class MainActivity : AppCompatActivity() {
         if(currentUser == null){
             SendUserToLoginActivity()
         }
+        else{
+            CheckUserExistence()
+        }
     }
+
+    private fun CheckUserExistence() {
+
+        val currUserId: String? = mAuth.currentUser?.uid
+
+        val userListener = object: ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if(!dataSnapshot.hasChild(currUserId.toString())){
+                    SendUserToSetupActivity()
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+            }
+        }
+
+        userRef.addValueEventListener(userListener)
+
+    }
+
+    private fun SendUserToSetupActivity() {
+        val setupIntent: Intent = Intent(this@MainActivity,SetupActivity::class.java)
+        setupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(setupIntent)
+        finish()
+    }
+
 
     private fun SendUserToLoginActivity(){
         val loginIntent: Intent = Intent(this@MainActivity,LoginActivity::class.java)
