@@ -15,6 +15,7 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -42,6 +43,14 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        val currentUser: FirebaseUser? =  mAuth.currentUser
+        if(currentUser != null){
+            SendUserToMainActivity()
+        }
+    }
+
     private fun CreateNewAccount(){
         val email: String = userEmail.text.toString()
         val password: String = userPassword.text.toString()
@@ -60,27 +69,37 @@ class RegisterActivity : AppCompatActivity() {
             Toast.makeText(this,"Your Password and Confirmation Password don't match.\nPlease try again!",Toast.LENGTH_SHORT).show()
         }
         else {
-
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this@RegisterActivity)
-            builder.setCancelable(false)
-            builder.setView(R.layout.loading_dialog)
-            val dialog: AlertDialog = builder.create()
-            dialog.show()
+            val progressBar: AlertDialog = ProgressBar()
+            progressBar.show()
 
             mAuth.createUserWithEmailAndPassword(email,password)
                 .addOnCompleteListener(this) { task ->
                     if(task.isSuccessful){
                         SendUserToSetupActivity()
                         Toast.makeText(this@RegisterActivity,"Your authentication was successful!",Toast.LENGTH_SHORT).show()
-                        dialog.dismiss()
+                        progressBar.dismiss()
                         }
                     else{
                         val message: String? = task.exception?.message
                         Toast.makeText(this@RegisterActivity,"Error Occured: $message",Toast.LENGTH_SHORT).show()
-                        dialog.dismiss()
+                        progressBar.dismiss()
                         }
                 }
         }
+    }
+
+    private fun ProgressBar(): AlertDialog {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this@RegisterActivity)
+        builder.setCancelable(false)
+        builder.setView(R.layout.loading_dialog)
+        return builder.create()
+    }
+
+    private fun SendUserToMainActivity(){
+        val mainIntent: Intent = Intent(this@RegisterActivity,MainActivity::class.java)
+        mainIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        startActivity(mainIntent)
+        finish()
     }
 
     private fun SendUserToSetupActivity(){
