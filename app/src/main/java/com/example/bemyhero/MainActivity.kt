@@ -6,19 +6,19 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
-import android.widget.CheckBox
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
-import androidx.annotation.NonNull
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
-import java.lang.ref.PhantomReference
-import java.net.Authenticator
+import de.hdodenhof.circleimageview.CircleImageView
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,7 +27,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var actionBarDrawerToggle: ActionBarDrawerToggle
     private lateinit var postList: RecyclerView
     private lateinit var mToolbar: Toolbar
-    
+
+    private lateinit var navProfileImage: CircleImageView
+    private lateinit var navProfileUsername: TextView
+
+    private lateinit var currUserId: String
+
     private lateinit var mAuth: FirebaseAuth
     private lateinit var userRef: DatabaseReference
 
@@ -37,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         mAuth = FirebaseAuth.getInstance()
+        currUserId = mAuth.currentUser?.uid.toString()
         userRef = FirebaseDatabase.getInstance().getReference().child("Users")
 
         mToolbar = findViewById(R.id.main_page_toolbar)
@@ -49,12 +55,36 @@ class MainActivity : AppCompatActivity() {
         actionBarDrawerToggle.syncState()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         navigationView = findViewById(R.id.navigation_view)
+
         var navView: View = navigationView.inflateHeaderView(R.layout.navigation_header)
+        navProfileImage = navView.findViewById(R.id.nav_profile_image)
+        navProfileUsername = navView.findViewById(R.id.nav_user_full_name)
+
+        userRef.child(currUserId).addValueEventListener(object : ValueEventListener{
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if(dataSnapshot.exists()){
+                    val fullName: String = dataSnapshot.child("fullname").value.toString()
+                    val image: String = dataSnapshot.child("profileimage").value.toString()
+
+                    navProfileUsername.setText(fullName)
+                    Glide.with(this@MainActivity)
+                        .load(image)
+                        .placeholder(R.drawable.profile)
+                        .skipMemoryCache(true)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .into(navProfileImage)
+
+                }
+            }
+            override fun onCancelled(database: DatabaseError) {}
+        })
 
         navigationView.setNavigationItemSelectedListener { menuItem ->
             userMenuSelector(menuItem)
             false
         }
+
+
     }
 
     override fun onStart() {
