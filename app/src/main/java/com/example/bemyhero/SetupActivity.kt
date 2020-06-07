@@ -77,7 +77,6 @@ class SetupActivity : AppCompatActivity() {
 
         userRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                Toast.makeText(this@SetupActivity,"${dataSnapshot.exists()}",Toast.LENGTH_SHORT).show()
                 if (dataSnapshot.exists()) {
                     val image: String = dataSnapshot.child("profileimage").value.toString()
 
