@@ -78,14 +78,17 @@ class SetupActivity : AppCompatActivity() {
         userRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    val image: String = dataSnapshot.child("profileimage").value.toString()
-
-                    Glide.with(this@SetupActivity)
-                        .load(image)
-                        .placeholder(R.drawable.profile)
-                        .skipMemoryCache(true)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(profileImage)
+                    if(dataSnapshot.hasChild("profileimage")){
+                        val image: String = dataSnapshot.child("profileimage").value.toString()
+                        Glide.with(this@SetupActivity)
+                            .load(image)
+                            .placeholder(R.drawable.profile)
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(profileImage)
+                    } else {
+                        Toast.makeText(this@SetupActivity,"Profile image doesn't exist!",Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             override fun onCancelled(databaseError: DatabaseError) {}
@@ -125,8 +128,7 @@ class SetupActivity : AppCompatActivity() {
 
                                 Toast.makeText(this@SetupActivity,"Profile image stored successfully to Firebase Database!",Toast.LENGTH_SHORT).show()
                                 progressBar.dismiss()
-                            }
-                            else{
+                            } else {
                                 val message: String? = task.exception?.message
                                 Toast.makeText(this@SetupActivity,"Error Occurred: $message",Toast.LENGTH_SHORT).show()
                                 progressBar.dismiss()
