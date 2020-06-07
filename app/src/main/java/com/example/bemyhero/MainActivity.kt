@@ -63,16 +63,23 @@ class MainActivity : AppCompatActivity() {
         userRef.child(currUserId).addValueEventListener(object : ValueEventListener{
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if(dataSnapshot.exists()){
-                    val fullName: String = dataSnapshot.child("fullname").value.toString()
-                    val image: String = dataSnapshot.child("profileimage").value.toString()
-
-                    navProfileUsername.setText(fullName)
-                    Glide.with(this@MainActivity)
-                        .load(image)
-                        .placeholder(R.drawable.profile)
-                        .skipMemoryCache(true)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(navProfileImage)
+                    if(dataSnapshot.hasChild("fullname")) {
+                        val fullName: String = dataSnapshot.child("fullname").value.toString()
+                        navProfileUsername.setText(fullName)
+                    } else {
+                        Toast.makeText(this@MainActivity, "Profile name doesn't exist!", Toast.LENGTH_SHORT).show()
+                    }
+                    if(dataSnapshot.hasChild("profileimage")){
+                        val image: String = dataSnapshot.child("profileimage").value.toString()
+                        Glide.with(this@MainActivity)
+                            .load(image)
+                            .placeholder(R.drawable.profile)
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(navProfileImage)
+                    } else {
+                        Toast.makeText(this@MainActivity, "Profile image doesn't exist!", Toast.LENGTH_SHORT).show()
+                    }
 
                 }
             }
