@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
@@ -30,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var navProfileImage: CircleImageView
     private lateinit var navProfileUsername: TextView
+    private lateinit var addNewPost: ImageButton
 
     private lateinit var currUserId: String
 
@@ -49,6 +51,8 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(mToolbar)
         supportActionBar?.title = "Home"
 
+        addNewPost = findViewById(R.id.add_new_post_button)
+
         drawerLayout = findViewById(R.id.drawable_layout)
         actionBarDrawerToggle = ActionBarDrawerToggle(this@MainActivity, drawerLayout, R.string.drawer_open,R.string.drawer_close)
         drawerLayout.addDrawerListener(actionBarDrawerToggle)
@@ -56,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         navigationView = findViewById(R.id.navigation_view)
 
-        var navView: View = navigationView.inflateHeaderView(R.layout.navigation_header)
+        val navView: View = navigationView.inflateHeaderView(R.layout.navigation_header)
         navProfileImage = navView.findViewById(R.id.nav_profile_image)
         navProfileUsername = navView.findViewById(R.id.nav_user_full_name)
 
@@ -89,6 +93,10 @@ class MainActivity : AppCompatActivity() {
         navigationView.setNavigationItemSelectedListener { menuItem ->
             userMenuSelector(menuItem)
             false
+        }
+
+        addNewPost.setOnClickListener {
+            sendUserToPostActivity()
         }
 
 
@@ -124,6 +132,11 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun sendUserToPostActivity(){
+        val postIntent: Intent = Intent(this@MainActivity,PostActivity::class.java)
+        startActivity(postIntent)
+    }
+
     private fun SendUserToSetupActivity() {
         val setupIntent: Intent = Intent(this@MainActivity,SetupActivity::class.java)
         setupIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -149,6 +162,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun userMenuSelector(item: MenuItem){
         when(item.itemId){
+            R.id.nav_post -> {
+                sendUserToPostActivity()
+            }
             R.id.nav_profile -> {
                 Toast.makeText(this,"Profile",Toast.LENGTH_SHORT).show()
             }
