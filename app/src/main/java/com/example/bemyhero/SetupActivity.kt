@@ -72,7 +72,6 @@ class SetupActivity : AppCompatActivity() {
             galleryIntent.action = Intent.ACTION_GET_CONTENT
             galleryIntent.type = "image/*"
             startActivityForResult(galleryIntent,galleryPick)
-
         }
 
         userRef.addValueEventListener(object : ValueEventListener {
@@ -114,12 +113,14 @@ class SetupActivity : AppCompatActivity() {
 
             if(resultCode == Activity.RESULT_OK){
                 val resultUri: Uri = result.uri
-
                 val filePath: StorageReference = userProfileImageRef.child(currUserId+".jpg")
 
                 filePath.putFile(resultUri).addOnSuccessListener(this) { Object: UploadTask.TaskSnapshot ->
                     filePath.downloadUrl.addOnSuccessListener(this) { uri: Uri ->
+
+                        Toast.makeText(this@SetupActivity,"Profile image stored successfully to Firebase Storage!",Toast.LENGTH_SHORT).show()
                         val downloadUrl: String = uri.toString()
+
                         userRef.child("profileimage").setValue(downloadUrl).addOnCompleteListener { task ->
                             if(task.isSuccessful){
                                 val selfIntent = Intent(this@SetupActivity,SetupActivity::class.java)
@@ -161,7 +162,7 @@ class SetupActivity : AppCompatActivity() {
             Toast.makeText(this@SetupActivity,"Please enter your full name!",Toast.LENGTH_SHORT).show()
         }
         else if(TextUtils.isEmpty(userCountry)){
-            Toast.makeText(this@SetupActivity,"Please write your country!",Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@SetupActivity,"Please enter your country!",Toast.LENGTH_SHORT).show()
         }
         else {
             val progressBar: AlertDialog = ProgressBar()
