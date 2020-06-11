@@ -22,4 +22,9 @@
     <string name="country">Country</string>
     <string name="save">Save</string>
     <string name="please_wait_this_may_take_a_moment">Please wait! This may take a moment.</string>
+    <string name="what_s_on_your_mind">What\'s on your mind?</string>
+    <string name="update_post">Update Post</string>
+    <string name="new_post">Uploaded a post</string>
+    <string name="post_description">Post description...</string>
+    <string name="date_and_time">Date and Time</string>
 </resources>
