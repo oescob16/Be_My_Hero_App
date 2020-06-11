@@ -51,7 +51,7 @@
                     android:orientation="horizontal"
                     android:layout_marginStart="5dp"
                     android:padding="2dp">
-                    
+
                     <TextView
                         android:id="@+id/post_text"
                         android:layout_width="wrap_content"
@@ -62,18 +62,10 @@
                         android:textStyle="bold"/>
 
                     <TextView
-                        android:id="@+id/post_date"
+                        android:id="@+id/post_date_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/date"
-                        android:textColor="@android:color/black"
-                        android:textSize="13sp"/>
-
-                    <TextView
-                        android:id="@+id/post_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/time"
+                        android:text="@string/date_and_time"
                         android:textColor="@android:color/black"
                         android:textSize="13sp"/>
 
@@ -97,7 +89,7 @@
         <ImageView
             android:id="@+id/post_image"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="350dp"
             android:layout_margin="3dp"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"/>
