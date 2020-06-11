@@ -146,7 +146,7 @@ class PostActivity : AppCompatActivity() {
 
                     val postMap = HashMap<String,String>()
                     postMap.put("uid",currUserId)
-                    postMap.put("date&time",saveCurrDateAndTime)
+                    postMap.put("dateAndTime",saveCurrDateAndTime)
                     postMap.put("description",description)
                     postMap.put("profileimage",userProfileImage)
                     postMap.put("fullname",userFullName)
