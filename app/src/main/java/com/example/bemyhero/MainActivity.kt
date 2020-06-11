@@ -4,17 +4,20 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.widget.ImageButton
-import android.widget.TextView
-import android.widget.Toast
+import android.view.ViewGroup
+import android.widget.*
 import androidx.appcompat.widget.Toolbar
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.firebase.ui.database.FirebaseRecyclerAdapter
+import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -37,6 +40,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var mAuth: FirebaseAuth
     private lateinit var userRef: DatabaseReference
+    private lateinit var postsRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -46,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         currUserId = mAuth.currentUser?.uid.toString()
         userRef = FirebaseDatabase.getInstance().getReference().child("Users")
+        postsRef = FirebaseDatabase.getInstance().reference.child("Posts")
 
         mToolbar = findViewById(R.id.main_page_toolbar)
         setSupportActionBar(mToolbar)
@@ -59,6 +64,13 @@ class MainActivity : AppCompatActivity() {
         actionBarDrawerToggle.syncState()
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         navigationView = findViewById(R.id.navigation_view)
+
+        postList = findViewById(R.id.all_users_post_list)
+        postList.setHasFixedSize(true)
+        val linearLayoutManager = LinearLayoutManager(this)
+        linearLayoutManager.reverseLayout = true
+        linearLayoutManager.stackFromEnd = true
+        postList.layoutManager = linearLayoutManager
 
         val navView: View = navigationView.inflateHeaderView(R.layout.navigation_header)
         navProfileImage = navView.findViewById(R.id.nav_profile_image)
@@ -99,7 +111,55 @@ class MainActivity : AppCompatActivity() {
             sendUserToPostActivity()
         }
 
+        displayUsersPosts()
+    }
 
+    private fun displayUsersPosts() {
+        val options: FirebaseRecyclerOptions<Posts> = FirebaseRecyclerOptions.Builder<Posts>()
+            .setQuery(postsRef, Posts::class.java)
+            .setLifecycleOwner(this)
+            .build()
+
+        val firebaseRecyclerAdapter = object : FirebaseRecyclerAdapter<Posts, postsViewHolder>(options) {
+                override fun onBindViewHolder(viewHolder: postsViewHolder, position: Int, model: Posts) {
+                    viewHolder.setPost(model)
+                }
+
+                override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): postsViewHolder {
+                    val view: View = LayoutInflater.from(parent.context)
+                        .inflate(R.layout.posts_layout, parent, false)
+                    return postsViewHolder(view)
+                }
+            }
+        postList.adapter = firebaseRecyclerAdapter
+    }
+
+    class postsViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+        var mView: View = itemView
+
+        private val username: TextView = mView.findViewById(R.id.post_username)
+        private val profileImage: CircleImageView = mView.findViewById(R.id.post_profile_image)
+        private val dateAndTime: TextView = mView.findViewById(R.id.post_date_time)
+        private val description: TextView = mView.findViewById(R.id.post_description)
+        private val postImage: ImageView = mView.findViewById(R.id.post_image)
+
+        fun setPost(posts: Posts){
+            username.text = posts.fullname
+            dateAndTime.text = readableDate(posts.dateAndTime.toString())
+            description.text = posts.description
+            Glide.with(itemView.context)
+                .load(posts.image)
+                .into(postImage)
+            Glide.with(itemView.context)
+                .load(posts.profileimage)
+                .into(profileImage)
+        }
+
+        fun readableDate(date: String): String {
+            val day = date.substring(0,10)
+            val time = date.substring(11,16)
+            return "  —  " + day.replace("-","/") + " at " + time
+        }
     }
 
     override fun onStart() {
