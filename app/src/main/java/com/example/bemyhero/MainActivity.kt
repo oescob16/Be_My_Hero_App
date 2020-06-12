@@ -1,16 +1,20 @@
 package com.example.bemyhero
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import androidx.appcompat.widget.Toolbar
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -23,6 +27,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
+import java.security.AccessControlContext
+import java.security.AccessController.getContext
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -87,12 +94,15 @@ class MainActivity : AppCompatActivity() {
                     }
                     if(dataSnapshot.hasChild("profileimage")){
                         val image: String = dataSnapshot.child("profileimage").value.toString()
-                        Glide.with(this@MainActivity)
-                            .load(image)
-                            .placeholder(R.drawable.profile)
-                            .skipMemoryCache(true)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .into(navProfileImage)
+
+                        if(isValidGlideContext()){
+                            Glide.with(this@MainActivity)
+                                .load(image)
+                                .placeholder(R.drawable.profile)
+                                .skipMemoryCache(true)
+                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                .into(navProfileImage)
+                        }
                     } else {
                         Toast.makeText(this@MainActivity, "Profile image doesn't exist!", Toast.LENGTH_SHORT).show()
                     }
@@ -114,6 +124,8 @@ class MainActivity : AppCompatActivity() {
         displayUsersPosts()
     }
 
+    fun Context.isValidGlideContext() = this !is Activity || (!this.isDestroyed && !this.isFinishing)
+
     private fun displayUsersPosts() {
         val options: FirebaseRecyclerOptions<Posts> = FirebaseRecyclerOptions.Builder<Posts>()
             .setQuery(postsRef, Posts::class.java)
@@ -121,16 +133,23 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         val firebaseRecyclerAdapter = object : FirebaseRecyclerAdapter<Posts, postsViewHolder>(options) {
-                override fun onBindViewHolder(viewHolder: postsViewHolder, position: Int, model: Posts) {
-                    viewHolder.setPost(model)
-                }
+            override fun onBindViewHolder(viewHolder: postsViewHolder, position: Int, model: Posts) {
+                val postKey: String? = getRef(position).key
 
-                override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): postsViewHolder {
-                    val view: View = LayoutInflater.from(parent.context)
-                        .inflate(R.layout.posts_layout, parent, false)
-                    return postsViewHolder(view)
+                viewHolder.setPost(model)
+
+                viewHolder.mView.setOnClickListener {
+                    val clickIntent: Intent =  Intent(this@MainActivity,ClickPostActivity::class.java)
+                    clickIntent.putExtra("PostKey",postKey)
+                    startActivity(clickIntent)
                 }
             }
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): postsViewHolder {
+                val view: View = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.posts_layout, parent, false)
+                return postsViewHolder(view)
+            }
+        }
         postList.adapter = firebaseRecyclerAdapter
     }
 
@@ -212,6 +231,11 @@ class MainActivity : AppCompatActivity() {
         finish()
     }
 
+    private fun sendUserToSettingsActivity(){
+        val loginIntent: Intent = Intent(this@MainActivity,SettingsActivity::class.java)
+        startActivity(loginIntent)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(actionBarDrawerToggle.onOptionsItemSelected(item)){
             return true
@@ -241,7 +265,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this,"Messages",Toast.LENGTH_SHORT).show()
             }
             R.id.nav_settings -> {
-                Toast.makeText(this,"Settings",Toast.LENGTH_SHORT).show()
+                sendUserToSettingsActivity()
             }
             R.id.nav_logout -> {
                 mAuth.signOut()
