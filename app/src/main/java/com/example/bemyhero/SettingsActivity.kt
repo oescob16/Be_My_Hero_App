@@ -2,14 +2,16 @@ package com.example.bemyhero
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -17,11 +19,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.android.synthetic.main.activity_settings.*
+
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -41,9 +42,15 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var userProfileImageRef: StorageReference
 
     private lateinit var currUserId: String
+    private lateinit var downloadUrl: String
+
+    private var hasChangedProfileImage: Boolean = false
+    private var hasChangedFullName: Boolean = false
 
     private val galleryPick = 1
     private lateinit var progressBar: AlertDialog
+
+    private var TAG: String = "SettingsActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,21 +81,23 @@ class SettingsActivity : AppCompatActivity() {
         settingsRef.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if(dataSnapshot.exists()){
+                    val fullNameData = dataSnapshot.child("fullname").value.toString()
                     val profileImageData = dataSnapshot.child("profileimage").value.toString()
                     val userNameData = dataSnapshot.child("username").value.toString()
                     val birthDayData = dataSnapshot.child("dateofbirth").value.toString()
                     val statusData = dataSnapshot.child("status").value.toString()
                     val relationshipData = dataSnapshot.child("relationshipstatus").value.toString()
                     val countryData = dataSnapshot.child("country").value.toString()
-                    val fullNameData = dataSnapshot.child("fullname").value.toString()
                     val genderData = dataSnapshot.child("gender").value.toString()
 
-                    Glide.with(this@SettingsActivity)
-                        .load(profileImageData)
-                        .placeholder(R.drawable.profile)
-                        .skipMemoryCache(true)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(userProfileImage)
+                    if(isValidGlideContext()) {
+                        Glide.with(this@SettingsActivity)
+                            .load(profileImageData)
+                            .placeholder(R.drawable.profile)
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(userProfileImage)
+                    }
 
                     userName.setText(userNameData)
                     userDateOfBirth.setText(birthDayData)
@@ -115,8 +124,12 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    fun Context.isValidGlideContext() = this !is Activity || (!this.isDestroyed && !this.isFinishing)
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        hasChangedProfileImage = true
 
         if(requestCode == galleryPick && data != null){
             val imageUri: Uri? = data.data
@@ -141,7 +154,7 @@ class SettingsActivity : AppCompatActivity() {
                     filePath.downloadUrl.addOnSuccessListener(this) { uri: Uri ->
 
                         Toast.makeText(this@SettingsActivity,"Profile image stored successfully to Firebase Storage!",Toast.LENGTH_SHORT).show()
-                        val downloadUrl: String = uri.toString()
+                        downloadUrl = uri.toString()
 
                         settingsRef.child("profileimage").setValue(downloadUrl).addOnCompleteListener { task ->
                             if(task.isSuccessful){
@@ -166,7 +179,7 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
         if(data == null){
-            val selfIntent = Intent(this@SettingsActivity,SetupActivity::class.java)
+            val selfIntent = Intent(this@SettingsActivity,SettingsActivity::class.java)
             selfIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             startActivity(selfIntent)
         }
@@ -180,6 +193,8 @@ class SettingsActivity : AppCompatActivity() {
         val newCountry: String = userCountry.text.toString()
         val newFullName: String = userFullName.text.toString()
         val newGender: String = userGender.text.toString()
+
+        hasChangedFullName = true
 
         if(TextUtils.isEmpty(newUserStatus)){
             Toast.makeText(this@SettingsActivity,"Please enter your status!",Toast.LENGTH_SHORT).show()
@@ -233,6 +248,32 @@ class SettingsActivity : AppCompatActivity() {
                 progressBar.dismiss()
             }
         }
+
+        updateAllPosts(downloadUrl,fullname)
+    }
+
+    private fun updateAllPosts(newProfileImage: String, newFullName: String) {
+        val postsRef = FirebaseDatabase.getInstance().reference.child("Posts")
+        val query: Query = postsRef.orderByChild("uid").equalTo(currUserId)
+
+        val valueEventListener: ValueEventListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if(hasChangedProfileImage) {
+                    for (ds in dataSnapshot.children) {
+                        ds.child("profileimage").ref.setValue(newProfileImage)
+                    }
+                }
+                if(hasChangedFullName) {
+                    for (ds in dataSnapshot.children) {
+                        ds.child("fullname").ref.setValue(newFullName)
+                    }
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.d(TAG, databaseError.message)
+            }
+        }
+        query.addListenerForSingleValueEvent(valueEventListener)
     }
 
     private fun sendUserToMainActivity(){
