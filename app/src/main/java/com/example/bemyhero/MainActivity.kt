@@ -232,8 +232,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendUserToSettingsActivity(){
-        val loginIntent: Intent = Intent(this@MainActivity,SettingsActivity::class.java)
-        startActivity(loginIntent)
+        val settingsIntent: Intent = Intent(this@MainActivity,SettingsActivity::class.java)
+        startActivity(settingsIntent)
+    }
+
+    private fun sendUserToProfileActivity(){
+        val profileIntent: Intent = Intent(this@MainActivity,ProfileActivity::class.java)
+        startActivity(profileIntent)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -250,7 +255,7 @@ class MainActivity : AppCompatActivity() {
                 sendUserToPostActivity()
             }
             R.id.nav_profile -> {
-                Toast.makeText(this,"Profile",Toast.LENGTH_SHORT).show()
+                sendUserToProfileActivity()
             }
             R.id.nav_home -> {
                 Toast.makeText(this,"Home",Toast.LENGTH_SHORT).show()
