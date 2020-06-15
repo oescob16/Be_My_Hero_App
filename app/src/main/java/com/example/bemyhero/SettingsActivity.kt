@@ -42,8 +42,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var userProfileImageRef: StorageReference
 
     private lateinit var currUserId: String
-    private lateinit var downloadUrl: String
-
+    private var downloadUrl: String? = null
     private var hasChangedProfileImage: Boolean = false
     private var hasChangedFullName: Boolean = false
 
@@ -248,11 +247,10 @@ class SettingsActivity : AppCompatActivity() {
                 progressBar.dismiss()
             }
         }
-
         updateAllPosts(downloadUrl,fullname)
     }
 
-    private fun updateAllPosts(newProfileImage: String, newFullName: String) {
+    private fun updateAllPosts(newProfileImage: String?, newFullName: String) {
         val postsRef = FirebaseDatabase.getInstance().reference.child("Posts")
         val query: Query = postsRef.orderByChild("uid").equalTo(currUserId)
 
