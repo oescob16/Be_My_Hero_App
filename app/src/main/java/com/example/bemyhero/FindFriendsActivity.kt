@@ -60,8 +60,6 @@ class FindFriendsActivity : AppCompatActivity() {
     }
 
     private fun searchFriends(userInputText: String) {
-        Toast.makeText(this,"Searching...",Toast.LENGTH_LONG).show()
-
         val searchFriendsQuery = allUsersRef.orderByChild("fullname")
             .startAt(userInputText)
             .endAt(userInputText + "\uf8ff")
