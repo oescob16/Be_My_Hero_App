@@ -60,7 +60,6 @@ class FindFriendsActivity : AppCompatActivity() {
     }
 
     private fun searchFriends(userInputText: String) {
-        Log.i("SEARCH",userInputText)
         Toast.makeText(this,"Searching...",Toast.LENGTH_LONG).show()
 
         val searchFriendsQuery = allUsersRef.orderByChild("fullname")
