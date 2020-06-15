@@ -27,8 +27,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
-import java.security.AccessControlContext
-import java.security.AccessController.getContext
 
 
 class MainActivity : AppCompatActivity() {
@@ -132,8 +130,8 @@ class MainActivity : AppCompatActivity() {
             .setLifecycleOwner(this)
             .build()
 
-        val firebaseRecyclerAdapter = object : FirebaseRecyclerAdapter<Posts, postsViewHolder>(options) {
-            override fun onBindViewHolder(viewHolder: postsViewHolder, position: Int, model: Posts) {
+        val firebaseRecyclerAdapter = object : FirebaseRecyclerAdapter<Posts, PostsViewHolder>(options) {
+            override fun onBindViewHolder(viewHolder: PostsViewHolder, position: Int, model: Posts) {
                 val postKey: String? = getRef(position).key
 
                 viewHolder.setPost(model)
@@ -144,16 +142,16 @@ class MainActivity : AppCompatActivity() {
                     startActivity(clickIntent)
                 }
             }
-            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): postsViewHolder {
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostsViewHolder {
                 val view: View = LayoutInflater.from(parent.context)
                     .inflate(R.layout.posts_layout, parent, false)
-                return postsViewHolder(view)
+                return PostsViewHolder(view)
             }
         }
         postList.adapter = firebaseRecyclerAdapter
     }
 
-    class postsViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+    class PostsViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         var mView: View = itemView
 
         private val username: TextView = mView.findViewById(R.id.post_username)
@@ -236,6 +234,11 @@ class MainActivity : AppCompatActivity() {
         startActivity(settingsIntent)
     }
 
+    private fun sendUserToFindFriendsActivity(){
+        val findFriendsIntent: Intent = Intent(this@MainActivity,FindFriendsActivity::class.java)
+        startActivity(findFriendsIntent)
+    }
+
     private fun sendUserToProfileActivity(){
         val profileIntent: Intent = Intent(this@MainActivity,ProfileActivity::class.java)
         startActivity(profileIntent)
@@ -264,7 +267,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this,"Friends List",Toast.LENGTH_SHORT).show()
             }
             R.id.nav_find_friends -> {
-                Toast.makeText(this,"Find Friends",Toast.LENGTH_SHORT).show()
+                sendUserToFindFriendsActivity()
             }
             R.id.nav_messages -> {
                 Toast.makeText(this,"Messages",Toast.LENGTH_SHORT).show()
