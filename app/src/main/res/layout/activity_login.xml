@@ -15,7 +15,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="110dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="112dp"
         app:srcCompat="@drawable/logo" />
 
@@ -27,7 +27,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="54dp"
-        android:layout_marginTop="27dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="53dp"
         android:autofillHints=""
         android:background="@drawable/inputs"
@@ -45,7 +45,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="52dp"
-        android:layout_marginTop="27dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="49dp"
         android:autofillHints=""
         android:background="@drawable/inputs"
@@ -96,7 +96,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_marginStart="47dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="0dp"
         android:layout_marginEnd="49dp"
         android:text="@string/or_login_with"
         android:textAlignment="center"
@@ -109,15 +109,14 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView2"
         android:layout_alignParentStart="true"
-        android:layout_marginStart="25dp"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal">
+        android:layout_marginTop="2dp"
+        android:orientation="horizontal"
+        android:gravity="center">
 
         <ImageView
             android:id="@+id/facebook_button"
             android:layout_width="100dp"
             android:layout_height="80dp"
-            android:layout_marginTop="10dp"
             android:src="@drawable/facebook">
 
         </ImageView>
@@ -134,7 +133,6 @@
             android:id="@+id/google_button"
             android:layout_width="85dp"
             android:layout_height="75dp"
-            android:layout_marginTop="20dp"
             android:src="@drawable/google">
 
         </ImageView>
