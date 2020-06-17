@@ -5,6 +5,7 @@
     android:id="@+id/drawable_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/mainColor"
     tools:context=".MainActivity">
 
     <RelativeLayout
@@ -13,8 +14,7 @@
 
         <include
             android:id="@+id/main_page_toolbar"
-            layout = "@layout/app_bar_layout"
-            >
+            layout = "@layout/app_bar_layout">
         </include>
 
         <FrameLayout
