@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -27,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.android.synthetic.main.posts_layout.view.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -42,10 +44,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var addNewPost: ImageButton
 
     private lateinit var currUserId: String
+    private var likeChecker: Boolean = false
 
     private lateinit var mAuth: FirebaseAuth
     private lateinit var userRef: DatabaseReference
     private lateinit var postsRef: DatabaseReference
+    private lateinit var likesRef: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -54,8 +58,9 @@ class MainActivity : AppCompatActivity() {
 
         mAuth = FirebaseAuth.getInstance()
         currUserId = mAuth.currentUser?.uid.toString()
-        userRef = FirebaseDatabase.getInstance().getReference().child("Users")
+        userRef = FirebaseDatabase.getInstance().reference.child("Users")
         postsRef = FirebaseDatabase.getInstance().reference.child("Posts")
+        likesRef = FirebaseDatabase.getInstance().reference.child("Likes")
 
         mToolbar = findViewById(R.id.main_page_toolbar)
         setSupportActionBar(mToolbar)
@@ -141,6 +146,35 @@ class MainActivity : AppCompatActivity() {
                     clickIntent.putExtra("PostKey",postKey)
                     startActivity(clickIntent)
                 }
+
+                if (postKey != null) {
+                    viewHolder.setLikeStatus(postKey)
+                }
+
+                viewHolder.commentButton.setOnClickListener {
+                    val commentsIntent: Intent =  Intent(this@MainActivity,CommentsActivity::class.java)
+                    commentsIntent.putExtra("PostKey",postKey)
+                    startActivity(commentsIntent)
+                }
+
+                viewHolder.likeButton.setOnClickListener {
+                    likeChecker = true
+
+                    likesRef.addValueEventListener(object: ValueEventListener {
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                            if(likeChecker){
+                                likeChecker = if (postKey?.let { it -> dataSnapshot.child(it).hasChild(currUserId) }!!){
+                                    likesRef.child(postKey).child(currUserId).removeValue()
+                                    false
+                                } else {
+                                    likesRef.child(postKey).child(currUserId).setValue(true)
+                                    false
+                                }
+                            }
+                        }
+                        override fun onCancelled(databaseError: DatabaseError) {}
+                    })
+                }
             }
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostsViewHolder {
                 val view: View = LayoutInflater.from(parent.context)
@@ -160,6 +194,13 @@ class MainActivity : AppCompatActivity() {
         private val description: TextView = mView.findViewById(R.id.post_description)
         private val postImage: ImageView = mView.findViewById(R.id.post_image)
 
+        val likeButton: ImageButton = mView.findViewById(R.id.like_button)
+        val commentButton: ImageButton = mView.findViewById(R.id.comment_button)
+        val displayLikes: TextView = mView.findViewById(R.id.likes_counter)
+        var likesCounter: Int = 0
+        private val currUserId: String? = FirebaseAuth.getInstance().currentUser?.uid
+        private val likesRef: DatabaseReference = FirebaseDatabase.getInstance().reference.child("Likes")
+
         fun setPost(posts: Posts){
             username.text = posts.fullname
             dateAndTime.text = readableDate(posts.dateAndTime.toString())
@@ -170,6 +211,26 @@ class MainActivity : AppCompatActivity() {
             Glide.with(itemView.context)
                 .load(posts.profileimage)
                 .into(profileImage)
+        }
+
+        fun setLikeStatus(postKey: String){
+
+            likesRef.addValueEventListener(object: ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if(currUserId?.let { dataSnapshot.child(postKey).hasChild(it) }!!){
+                        likesCounter = dataSnapshot.child(postKey).childrenCount.toInt()
+                        likeButton.setImageResource(R.drawable.like)
+                        displayLikes.text = "$likesCounter Likes"
+                    }
+                    else {
+                        likesCounter = dataSnapshot.child(postKey).childrenCount.toInt()
+                        likeButton.setImageResource(R.drawable.unlike)
+                        displayLikes.text = "$likesCounter Likes"
+                    }
+                }
+                override fun onCancelled(databaseError: DatabaseError) {}
+            })
+
         }
 
         fun readableDate(date: String): String {
