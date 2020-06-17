@@ -11,14 +11,14 @@
         android:layout_marginBottom="4dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/posts_border">
+        android:layout_marginTop="10dp">
         
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
             android:padding="5dp"
+            android:background="@android:color/white"
             android:orientation="horizontal">
 
             <de.hdodenhof.circleimageview.CircleImageView
@@ -81,8 +81,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/post_description"
-            android:layout_marginLeft="3dp"
-            android:layout_marginRight="3dp"
+            android:background="@android:color/white"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
             android:padding="3dp"
             android:textSize="14sp"
             android:textColor="@android:color/tab_indicator_text"/>
@@ -90,10 +91,59 @@
         <ImageView
             android:id="@+id/post_image"
             android:layout_width="match_parent"
-            android:layout_height="350dp"
-            android:layout_margin="3dp"
+            android:layout_height="370dp"
+            android:layout_margin="0dp"
+            android:background="@android:color/white"
             android:adjustViewBounds="true"
             android:scaleType="centerCrop"/>
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:background="@android:color/white"
+            android:layout_height="55dp"
+            android:orientation="horizontal"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp">
+
+            <ImageButton
+                android:id="@+id/like_button"
+                android:layout_marginTop="7dp"
+                android:layout_marginLeft="10dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/white"
+                android:src="@drawable/unlike"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"/>
+            
+            <TextView
+                android:id="@+id/likes_counter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="17dp"
+                android:layout_marginLeft="5dp"
+                android:text="0 Likes"
+                android:paddingRight="12dp"
+                android:paddingLeft="8dp"
+                android:paddingBottom="10dp"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <ImageButton
+                android:id="@+id/comment_button"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginTop="7dp"
+                android:background="@android:color/white"
+                android:src="@drawable/comment"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:layout_marginLeft="155dp"
+                android:baselineAlignBottom="false"/>
+
+
+        </LinearLayout>
 
     </LinearLayout>
 
