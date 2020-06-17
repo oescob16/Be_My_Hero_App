@@ -247,7 +247,49 @@ class SettingsActivity : AppCompatActivity() {
                 progressBar.dismiss()
             }
         }
+        // Optimize both methods in the final version to make it faster and efficient.
         updateAllPosts(downloadUrl,fullname)
+        updateAllComments(downloadUrl,fullname)
+    }
+
+    private fun updateAllComments(newProfileImage: String?, newFullName: String){
+        val commentsRef = FirebaseDatabase.getInstance().reference.child("Posts")
+
+        commentsRef.addListenerForSingleValueEvent( object: ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (posts in dataSnapshot.children){
+                    val postKey = posts.key.toString()
+                    updateAllCommentsHelper(newProfileImage,newFullName,postKey, commentsRef)
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.d(TAG, databaseError.message)
+            }
+        })
+    }
+
+    private fun updateAllCommentsHelper(newProfileImage: String?, newFullName: String, postKey: String, ref: DatabaseReference){
+        val commentsRef = ref.child(postKey).child("Comments")
+        val query: Query = commentsRef.orderByChild("uid").equalTo(currUserId)
+
+        val valueEventListener: ValueEventListener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if(hasChangedProfileImage) {
+                    for (ds in dataSnapshot.children) {
+                        ds.child("profileimage").ref.setValue(newProfileImage)
+                    }
+                }
+                if(hasChangedFullName) {
+                    for (ds in dataSnapshot.children) {
+                        ds.child("fullname").ref.setValue(newFullName)
+                    }
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.d(TAG, databaseError.message)
+            }
+        }
+        query.addListenerForSingleValueEvent(valueEventListener)
     }
 
     private fun updateAllPosts(newProfileImage: String?, newFullName: String) {
