@@ -24,6 +24,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var userEmail: EditText
     private lateinit var userPassword: EditText
     private lateinit var newAccountLink: TextView
+    private lateinit var forgottenPasswordLink: TextView
 
     private lateinit var mAuth: FirebaseAuth
 
@@ -45,6 +46,12 @@ class LoginActivity : AppCompatActivity() {
         userEmail = findViewById(R.id.login_email)
         userPassword = findViewById(R.id.login_password)
         loginButton = findViewById(R.id.login_button)
+
+        forgottenPasswordLink = findViewById(R.id.forgot_password_link)
+
+        forgottenPasswordLink.setOnClickListener {
+            sendUserToResetPasswordActivity()
+        }
 
         googleButton = findViewById(R.id.google_button)
 
@@ -168,6 +175,11 @@ class LoginActivity : AppCompatActivity() {
     private fun SendUserToRegisterActivity(){
         val registerIntent: Intent = Intent(this@LoginActivity,RegisterActivity::class.java)
         startActivity(registerIntent)
+    }
+
+    private fun sendUserToResetPasswordActivity(){
+        val resetPasswordIntent: Intent = Intent(this@LoginActivity,ResetPasswordActivity::class.java)
+        startActivity(resetPasswordIntent)
     }
 
     private fun sendUserToLoginActivity(){
