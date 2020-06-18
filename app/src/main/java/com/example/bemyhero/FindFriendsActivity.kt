@@ -2,26 +2,21 @@ package com.example.bemyhero
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.firebase.ui.database.FirebaseArray
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
-import kotlin.collections.ArrayList
 
 
 class FindFriendsActivity : AppCompatActivity() {
@@ -71,6 +66,12 @@ class FindFriendsActivity : AppCompatActivity() {
         val adapter = object: FirebaseRecyclerAdapter<FindFriends,FindFriendsViewHolder>(options) {
             override fun onBindViewHolder(viewHolder: FindFriendsViewHolder, position: Int, model: FindFriends) {
                 viewHolder.setProfilesInfo(model)
+
+                // When the user searches for a person and then clicks on their layout, the user will be sent to that person's profile
+                viewHolder.mView.setOnClickListener {
+                    val visitUserKey = getRef(position).key
+                    sendUserToFriendsProfileActivity(visitUserKey)
+                }
             }
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FindFriendsViewHolder {
                 val view: View = LayoutInflater.from(parent.context)
@@ -95,5 +96,11 @@ class FindFriendsActivity : AppCompatActivity() {
                 .load(friends.profileimage)
                 .into(friendsProfileImage)
         }
+    }
+
+    private fun sendUserToFriendsProfileActivity(visitUserKey: String?) {
+        val friendProfileIntent = Intent(this@FindFriendsActivity,FriendsProfileActivity::class.java)
+        friendProfileIntent.putExtra("FRIEND_ID",visitUserKey)
+        startActivity(friendProfileIntent)
     }
 }
