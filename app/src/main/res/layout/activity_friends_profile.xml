@@ -109,34 +109,33 @@
                 android:textSize="16sp"/>
             
             <Button
-                android:id="@+id/accept_friend_request_button"
-                android:layout_width="140dp"
-                android:layout_marginLeft="25dp"
+                android:id="@+id/send_friend_request_button"
+                android:layout_width="220dp"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/friend_profile_relationship"
                 android:layout_marginTop="30dp"
                 android:background="@drawable/inputs"
                 android:backgroundTint="@color/colorPrimaryDark"
-                android:text="Add Friend"
+                android:layout_centerInParent="true"
+                android:text="Send Friend Request"
                 android:textAllCaps="false"
                 android:textColor="@android:color/background_light"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"/>
 
             <Button
                 android:id="@+id/decline_friend_request_button"
-                android:layout_width="140dp"
-                android:layout_marginLeft="30dp"
-                android:layout_toEndOf="@+id/accept_friend_request_button"
+                android:layout_width="220dp"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/friend_profile_relationship"
-                android:layout_marginTop="30dp"
+                android:layout_centerInParent="true"
+                android:layout_below="@id/send_friend_request_button"
+                android:layout_marginTop="20dp"
                 android:background="@drawable/inputs"
                 android:backgroundTint="@color/colorPrimary"
-                android:text="Delete"
+                android:text="Delete Friend Request"
                 android:textAllCaps="false"
                 android:textColor="@android:color/background_light"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold"/>
 
         </RelativeLayout>
