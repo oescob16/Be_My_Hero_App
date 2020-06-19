@@ -38,10 +38,11 @@ class PostActivity : AppCompatActivity() {
 
     private lateinit var saveCurrDateAndTime: String
     private lateinit var postRandomName: String
+    private lateinit var currUserId: String
 
     private lateinit var progressBar: AlertDialog
 
-    private lateinit var currUserId: String
+    private var countPosts = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,7 +56,6 @@ class PostActivity : AppCompatActivity() {
 
         userRef = FirebaseDatabase.getInstance().reference.child("Users")
         postRef = FirebaseDatabase.getInstance().reference.child("Posts")
-            .child(currUserId + postRandomName)
         userPostImageRef = FirebaseStorage.getInstance().reference
 
         userRef.keepSynced(true)
@@ -121,7 +121,7 @@ class PostActivity : AppCompatActivity() {
 
                     val downloadUrl = uri.toString()
 
-                    postRef.child("image").setValue(downloadUrl).addOnCompleteListener { task ->
+                    postRef.child(currUserId + postRandomName).child("image").setValue(downloadUrl).addOnCompleteListener { task ->
                         if(task.isSuccessful){
                             Toast.makeText(this@PostActivity,"Profile image stored successfully to Firebase Storage!",Toast.LENGTH_SHORT).show()
                             savingPostInfoToDatabase()
@@ -138,6 +138,18 @@ class PostActivity : AppCompatActivity() {
     }
 
     private fun savingPostInfoToDatabase(){
+        postRef.addValueEventListener(object: ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                if(dataSnapshot.exists()){
+                    countPosts = dataSnapshot.childrenCount.toInt()
+                }
+                else {
+                    countPosts = 0
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {}
+        })
+
         userRef.child(currUserId).addValueEventListener(object: ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if(dataSnapshot.exists()){
@@ -145,13 +157,14 @@ class PostActivity : AppCompatActivity() {
                     val userProfileImage: String = dataSnapshot.child("profileimage").getValue().toString()
 
                     val postMap = HashMap<String,String>()
-                    postMap.put("uid",currUserId)
-                    postMap.put("dateAndTime",saveCurrDateAndTime)
-                    postMap.put("description",description)
-                    postMap.put("profileimage",userProfileImage)
-                    postMap.put("fullname",userFullName)
+                    postMap["uid"] = currUserId
+                    postMap["dateAndTime"] = saveCurrDateAndTime
+                    postMap["description"] = description
+                    postMap["profileimage"] = userProfileImage
+                    postMap["fullname"] = userFullName
+                    postMap["positionofpost"] = countPosts.toString()
 
-                    postRef.updateChildren(postMap as Map<String, Any>).addOnCompleteListener { task ->
+                    postRef.child(currUserId + postRandomName).updateChildren(postMap as Map<String, Any>).addOnCompleteListener { task ->
                         if(task.isSuccessful){
                             sendUserToMainActivity()
                             Toast.makeText(this@PostActivity,"New post stored successfully to Firebase Database!",Toast.LENGTH_LONG).show()
