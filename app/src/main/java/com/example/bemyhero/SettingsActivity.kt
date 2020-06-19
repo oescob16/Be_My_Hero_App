@@ -140,6 +140,10 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         if(requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE && data != null){
+            val selfIntent = Intent(this@SettingsActivity,SettingsActivity::class.java)
+            selfIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT // new?
+            startActivity(selfIntent)
+
             val result: CropImage.ActivityResult = CropImage.getActivityResult(data)
 
             progressBar.setTitle("Updating profile image")
@@ -157,10 +161,6 @@ class SettingsActivity : AppCompatActivity() {
 
                         settingsRef.child("profileimage").setValue(downloadUrl).addOnCompleteListener { task ->
                             if(task.isSuccessful){
-                                val selfIntent = Intent(this@SettingsActivity,SettingsActivity::class.java)
-                                selfIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT // new?
-                                startActivity(selfIntent)
-
                                 Toast.makeText(this@SettingsActivity,"Profile image stored successfully to Firebase Database!",Toast.LENGTH_SHORT).show()
                                 progressBar.dismiss()
                             } else {
