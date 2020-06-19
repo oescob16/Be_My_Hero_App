@@ -130,8 +130,11 @@ class MainActivity : AppCompatActivity() {
     fun Context.isValidGlideContext() = this !is Activity || (!this.isDestroyed && !this.isFinishing)
 
     private fun displayUsersPosts() {
+
+        val sortPostsDescendingOrder: Query = postsRef.orderByChild("positionofpost")
+
         val options: FirebaseRecyclerOptions<Posts> = FirebaseRecyclerOptions.Builder<Posts>()
-            .setQuery(postsRef, Posts::class.java)
+            .setQuery(sortPostsDescendingOrder, Posts::class.java)
             .setLifecycleOwner(this)
             .build()
 
