@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.ContactsContract
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -13,6 +14,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
+import java.text.SimpleDateFormat
+import java.util.*
 
 class FriendsProfileActivity : AppCompatActivity() {
 
@@ -29,11 +32,14 @@ class FriendsProfileActivity : AppCompatActivity() {
 
     private lateinit var friendsRequestRef: DatabaseReference
     private lateinit var friendsProfileRef: DatabaseReference
+    private lateinit var friendsRef: DatabaseReference
     private lateinit var mAuth: FirebaseAuth
     private lateinit var senderUserId: String
     private lateinit var receiverUserId: String
 
     private lateinit var CURR_FRIENDS_STATE: String
+
+    private lateinit var saveCurrDateAndTime: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +59,15 @@ class FriendsProfileActivity : AppCompatActivity() {
                 if(CURR_FRIENDS_STATE == "not_friends"){
                     sendFriendRequest()
                 }
+                if(CURR_FRIENDS_STATE == "request_sent"){
+                    cancelFriendRequest()
+                }
+                if(CURR_FRIENDS_STATE == "request_received"){
+                    acceptFriendRequest()
+                }
+                if(CURR_FRIENDS_STATE == "friends"){
+                    deleteFriend()
+                }
             }
         }
         else {
@@ -61,6 +76,81 @@ class FriendsProfileActivity : AppCompatActivity() {
             sendRequestButton.visibility = View.INVISIBLE
         }
 
+    }
+
+    private fun deleteFriend(){
+        friendsRef.child(senderUserId).child(receiverUserId)
+            .removeValue()
+            .addOnCompleteListener(this) {task ->
+                if(task.isSuccessful){
+                    friendsRef.child(receiverUserId).child(senderUserId)
+                        .removeValue()
+                        .addOnCompleteListener(this) { task ->
+                            if(task.isSuccessful){
+                                sendRequestButton.isEnabled = true
+                                CURR_FRIENDS_STATE = "not_friends"
+                                sendRequestButton.text = "Send Friend Request"
+                            }
+                        }
+                }
+            }
+    }
+
+    private fun acceptFriendRequest(){
+        val dateOfFriends: String = getDate()
+        friendsRef.child(senderUserId).child(receiverUserId).child("date")
+            .setValue(dateOfFriends).addOnCompleteListener(this) { task ->
+                if(task.isSuccessful){
+                    friendsRef.child(receiverUserId).child(senderUserId).child("date")
+                        .setValue(dateOfFriends).addOnCompleteListener(this) { task ->
+                            if(task.isSuccessful){
+                                removeFriendRequestFromFirebase()
+                            }
+                        }
+                }
+            }
+    }
+
+    private fun removeFriendRequestFromFirebase(){
+        friendsRequestRef.child(senderUserId).child(receiverUserId)
+            .removeValue()
+            .addOnCompleteListener(this) {task ->
+                if(task.isSuccessful){
+                    friendsRequestRef.child(receiverUserId).child(senderUserId)
+                        .removeValue()
+                        .addOnCompleteListener(this) { task ->
+                            if(task.isSuccessful){
+                                sendRequestButton.isEnabled = true
+                                CURR_FRIENDS_STATE = "friends"
+                                sendRequestButton.text = "Unfriend"
+
+                                declineRequestButton.visibility = View.INVISIBLE
+                                declineRequestButton.isEnabled = false
+                            }
+                        }
+                }
+            }
+    }
+
+    private fun cancelFriendRequest(){
+        friendsRequestRef.child(senderUserId).child(receiverUserId)
+            .removeValue()
+            .addOnCompleteListener(this) {task ->
+                if(task.isSuccessful){
+                    friendsRequestRef.child(receiverUserId).child(senderUserId)
+                        .removeValue()
+                        .addOnCompleteListener(this) { task ->
+                            if(task.isSuccessful){
+                                sendRequestButton.isEnabled = true
+                                CURR_FRIENDS_STATE = "not_friends"
+                                sendRequestButton.text = "Send Friend Request"
+
+                                declineRequestButton.visibility = View.INVISIBLE
+                                declineRequestButton.isEnabled = false
+                            }
+                        }
+                }
+            }
     }
 
     private fun sendFriendRequest(){
@@ -74,7 +164,7 @@ class FriendsProfileActivity : AppCompatActivity() {
                             if(task.isSuccessful){
                                 sendRequestButton.isEnabled = true
                                 CURR_FRIENDS_STATE = "request_sent"
-                                sendRequestButton.setText("Cancel Friend Request")
+                                sendRequestButton.text = "Cancel Friend Request"
                             }
                         }
                 }
@@ -110,14 +200,14 @@ class FriendsProfileActivity : AppCompatActivity() {
                     profileName.text = fullNameData
                     profileGender.text = "Gender: $genderData"
 
-                    statesOfRequestsButtons()
+                    statesOfButtons()
                 }
             }
             override fun onCancelled(databaseError: DatabaseError) {}
         })
     }
 
-    private fun statesOfRequestsButtons(){
+    private fun statesOfButtons(){
         friendsRequestRef.child(senderUserId).addListenerForSingleValueEvent(object: ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if(dataSnapshot.hasChild(receiverUserId)){
@@ -129,6 +219,31 @@ class FriendsProfileActivity : AppCompatActivity() {
                         declineRequestButton.visibility = View.INVISIBLE
                         declineRequestButton.isEnabled = false
                     }
+                    else if (requestType == "Received"){
+                        CURR_FRIENDS_STATE = "request_received"
+                        sendRequestButton.text = "Accept Friend Request"
+
+                        declineRequestButton.visibility = View.VISIBLE
+                        declineRequestButton.isEnabled = true
+
+                        declineRequestButton.setOnClickListener {
+                            cancelFriendRequest()
+                        }
+                    }
+                }
+                else {
+                    friendsRef.child(senderUserId).addListenerForSingleValueEvent(object: ValueEventListener {
+                        override fun onDataChange(dataSnapshot: DataSnapshot) {
+                            if (dataSnapshot.hasChild(receiverUserId)){
+                                CURR_FRIENDS_STATE = "friends"
+                                sendRequestButton.text = "Unfriend"
+
+                                declineRequestButton.visibility = View.INVISIBLE
+                                declineRequestButton.isEnabled = false
+                            }
+                        }
+                        override fun onCancelled(databaseError: DatabaseError) {}
+                    })
                 }
             }
             override fun onCancelled(databaseError: DatabaseError) {}
@@ -141,6 +256,7 @@ class FriendsProfileActivity : AppCompatActivity() {
         senderUserId = mAuth.currentUser?.uid.toString()
         friendsProfileRef = FirebaseDatabase.getInstance().reference.child("Users").child(receiverUserId)
         friendsRequestRef = FirebaseDatabase.getInstance().reference.child("Friends_Requests")
+        friendsRef = FirebaseDatabase.getInstance().reference.child("Friends")
     }
 
     private fun initializeActivityFields(){
@@ -157,5 +273,12 @@ class FriendsProfileActivity : AppCompatActivity() {
         declineRequestButton = findViewById(R.id.decline_friend_request_button)
 
         CURR_FRIENDS_STATE = "not_friends"
+    }
+
+    private fun getDate(): String{
+        val calendar: Calendar = Calendar.getInstance()
+        val currDateAndTime = SimpleDateFormat("dd-MM-yyyy-HH:mm:ss")
+        saveCurrDateAndTime = currDateAndTime.format(calendar.time)
+        return saveCurrDateAndTime
     }
 }
