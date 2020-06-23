@@ -303,6 +303,11 @@ class MainActivity : AppCompatActivity() {
         startActivity(findFriendsIntent)
     }
 
+    private fun sendUserToFriendsActivity(){
+        val friendsIntent: Intent = Intent(this@MainActivity,FriendsActivity::class.java)
+        startActivity(friendsIntent)
+    }
+
     private fun sendUserToProfileActivity(){
         val profileIntent: Intent = Intent(this@MainActivity,ProfileActivity::class.java)
         startActivity(profileIntent)
@@ -328,7 +333,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this,"Home",Toast.LENGTH_SHORT).show()
             }
             R.id.nav_friends -> {
-                Toast.makeText(this,"Friends List",Toast.LENGTH_SHORT).show()
+                sendUserToFriendsActivity()
             }
             R.id.nav_find_friends -> {
                 sendUserToFindFriendsActivity()
