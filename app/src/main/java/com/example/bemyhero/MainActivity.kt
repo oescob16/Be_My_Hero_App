@@ -339,6 +339,7 @@ class MainActivity : AppCompatActivity() {
                 sendUserToFindFriendsActivity()
             }
             R.id.nav_messages -> {
+                sendUserToFriendsActivity()
                 Toast.makeText(this,"Messages",Toast.LENGTH_SHORT).show()
             }
             R.id.nav_settings -> {
