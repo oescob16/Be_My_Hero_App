@@ -1,11 +1,13 @@
 package com.example.bemyhero
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -65,6 +67,19 @@ class FriendsActivity : AppCompatActivity() {
                                 val userProfileImage: String = dataSnapshot.child("profileimage").value.toString()
 
                                 viewHolder.setInfo(model, userName, userProfileImage)
+
+                                viewHolder.mView.setOnClickListener {
+                                    val options = arrayOf("$userName's profile", "Send Message")
+                                    val alert: AlertDialog.Builder = AlertDialog.Builder(this@FriendsActivity)
+                                    alert.setTitle("Select Option")
+                                    alert.setItems(options) { dialog, which ->
+                                        when(which){
+                                            0 -> sendUserToFriendsProfileActivity(usersIDs)
+                                            1 -> sendUserToChatActivity(usersIDs, userName)
+                                        }
+                                    }
+                                    alert.show()
+                                }
                             }
                         }
                         override fun onCancelled(databaseError: DatabaseError) {}
@@ -78,6 +93,19 @@ class FriendsActivity : AppCompatActivity() {
             }
         }
         friendsList.adapter = firebaseRecyclerAdapter
+    }
+
+    private fun sendUserToChatActivity(visitUserKey: String?, userName: String){
+        val chatIntent = Intent(this@FriendsActivity,ChatActivity::class.java)
+        chatIntent.putExtra("FRIEND_ID",visitUserKey)
+        chatIntent.putExtra("FRIEND_FULL_NAME",userName)
+        startActivity(chatIntent)
+    }
+
+    private fun sendUserToFriendsProfileActivity(visitUserKey: String?) {
+        val friendProfileIntent = Intent(this@FriendsActivity,FriendsProfileActivity::class.java)
+        friendProfileIntent.putExtra("FRIEND_ID",visitUserKey)
+        startActivity(friendProfileIntent)
     }
 
     class FriendsViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
