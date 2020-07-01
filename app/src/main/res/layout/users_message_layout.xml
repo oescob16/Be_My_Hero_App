@@ -22,7 +22,8 @@
         android:textColor="@android:color/white"
         android:padding="10dp"
         android:textSize="14sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:textAlignment="textStart"/>
 
     <TextView
         android:id="@+id/sender_message"
