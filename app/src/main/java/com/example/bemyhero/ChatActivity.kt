@@ -19,6 +19,7 @@ import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 class ChatActivity : AppCompatActivity() {
@@ -28,6 +29,10 @@ class ChatActivity : AppCompatActivity() {
     private lateinit var sendMessageButton: ImageButton
     private lateinit var userMessageInput: EditText
     private lateinit var messagesList: RecyclerView
+
+    private var usersMessagesList = ArrayList<Messages>()
+    private lateinit var linearLayoutManager: LinearLayoutManager
+    private lateinit var messageAdapter: MessagesAdapter
 
     private lateinit var messageReceiverID: String
     private lateinit var messageReceiverName: String
@@ -57,6 +62,28 @@ class ChatActivity : AppCompatActivity() {
             sendMessageToFriend()
         }
 
+        fetchMessages()
+    }
+
+    private fun fetchMessages(){
+        rootRef.child("Messages").child(messageSenderID).child(messageReceiverID)
+            .addChildEventListener(object: ChildEventListener{
+                override fun onCancelled(p0: DatabaseError) {}
+
+                override fun onChildMoved(p0: DataSnapshot, p1: String?) {}
+
+                override fun onChildChanged(p0: DataSnapshot, p1: String?) {}
+
+                override fun onChildAdded(dataSnapshot: DataSnapshot, s: String?) {
+                    if(dataSnapshot.exists()){
+                        val messages: Messages = dataSnapshot.getValue(Messages::class.java)!!
+                        usersMessagesList.add(messages)
+                        messageAdapter.notifyDataSetChanged()
+                    }
+                }
+
+                override fun onChildRemoved(p0: DataSnapshot) {}
+            })
     }
 
     private fun sendMessageToFriend() {
@@ -83,7 +110,7 @@ class ChatActivity : AppCompatActivity() {
             messageTextBody["time"] = currTime
             messageTextBody["date"] = currDate
             messageTextBody["type"] = "text"
-            messageTextBody["from:"] = messageSenderID
+            messageTextBody["from"] = messageSenderID
 
             val messageBodyDetails = HashMap<String, Any>()
             messageBodyDetails["$messageSenderRef/$messagePushID"] = messageTextBody
@@ -92,10 +119,12 @@ class ChatActivity : AppCompatActivity() {
             rootRef.updateChildren(messageBodyDetails).addOnCompleteListener { task ->
                 if(task.isSuccessful){
                     Toast.makeText(this@ChatActivity,"Message Sent Successfully!",Toast.LENGTH_SHORT).show()
+                    userMessageInput.setText("")
                 }
                 else {
                     val message: String = task.exception?.message.toString()
                     Toast.makeText(this@ChatActivity,"Error occurred: $message.\nPlease try again!",Toast.LENGTH_SHORT).show()
+                    userMessageInput.setText("")
                 }
             }
         }
@@ -139,13 +168,6 @@ class ChatActivity : AppCompatActivity() {
         sendImageButton = findViewById(R.id.send_image_button)
         sendMessageButton = findViewById(R.id.send_message_button)
 
-        messagesList = findViewById(R.id.messages_list)
-        messagesList.setHasFixedSize(true)
-        val linearLayoutManager = LinearLayoutManager(this)
-        linearLayoutManager.reverseLayout = true
-        linearLayoutManager.stackFromEnd = true
-        messagesList.layoutManager = linearLayoutManager
-
         // Added chat_custom_bar.xml to ChatActivity.kt
         val actionBar: ActionBar? = supportActionBar
         actionBar?.setDisplayHomeAsUpEnabled(true)
@@ -156,5 +178,14 @@ class ChatActivity : AppCompatActivity() {
 
         chatReceiverFullName = findViewById(R.id.custom_profile_name)
         chatReceiverProfileImage = findViewById(R.id.custom_profile_image)
+
+        messageAdapter = MessagesAdapter(usersMessagesList)
+        messagesList = findViewById(R.id.messages_list)
+        this.linearLayoutManager = LinearLayoutManager(this)
+        messagesList.setHasFixedSize(true)
+        messagesList.layoutManager = linearLayoutManager
+        messagesList.adapter = messageAdapter
+
+
     }
 }
