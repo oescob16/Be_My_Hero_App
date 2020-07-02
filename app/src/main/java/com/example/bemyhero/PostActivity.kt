@@ -1,5 +1,6 @@
 package com.example.bemyhero
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
@@ -10,12 +11,10 @@ import android.text.TextUtils
 import android.view.MenuItem
 import android.widget.*
 import androidx.appcompat.widget.Toolbar
-import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.UploadTask
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.HashMap
@@ -41,8 +40,6 @@ class PostActivity : AppCompatActivity() {
     private lateinit var currUserId: String
 
     private lateinit var progressBar: AlertDialog
-
-    private var countPosts = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,7 +113,7 @@ class PostActivity : AppCompatActivity() {
             .child(imageUri?.lastPathSegment + postRandomName + ".jpg")
 
         imageUri?.let {
-            filePath.putFile(it).addOnSuccessListener(this) {Object: UploadTask.TaskSnapshot ->
+            filePath.putFile(it).addOnSuccessListener(this) {
                 filePath.downloadUrl.addOnSuccessListener(this) { uri: Uri ->
 
                     val downloadUrl = uri.toString()
@@ -138,17 +135,6 @@ class PostActivity : AppCompatActivity() {
     }
 
     private fun savingPostInfoToDatabase(){
-        postRef.addValueEventListener(object: ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                if(dataSnapshot.exists()){
-                    countPosts = dataSnapshot.childrenCount.toInt()
-                }
-                else {
-                    countPosts = 0
-                }
-            }
-            override fun onCancelled(databaseError: DatabaseError) {}
-        })
 
         userRef.child(currUserId).addValueEventListener(object: ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -162,7 +148,7 @@ class PostActivity : AppCompatActivity() {
                     postMap["description"] = description
                     postMap["profileimage"] = userProfileImage
                     postMap["fullname"] = userFullName
-                    postMap["positionofpost"] = countPosts.toString()
+                    postMap["positionofpost"] = getPositionOfPost()
 
                     postRef.child(currUserId + postRandomName).updateChildren(postMap as Map<String, Any>).addOnCompleteListener { task ->
                         if(task.isSuccessful){
@@ -181,6 +167,14 @@ class PostActivity : AppCompatActivity() {
         })
     }
 
+    @SuppressLint("SimpleDateFormat")
+    private fun getPositionOfPost(): String {
+        val calendar: Calendar = Calendar.getInstance()
+        val date = SimpleDateFormat("yyyy-MM-dd-HH:mm:ss.SSSSSS")
+        val dateOfPost = date.format(calendar.time)
+        return dateOfPost.replace(Regex("[-:.]"),"")
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == android.R.id.home){
@@ -190,7 +184,7 @@ class PostActivity : AppCompatActivity() {
     }
 
     private fun sendUserToMainActivity(){
-        val mainIntent: Intent = Intent(this@PostActivity,MainActivity::class.java)
+        val mainIntent = Intent(this@PostActivity,MainActivity::class.java)
         startActivity(mainIntent)
     }
 
@@ -201,7 +195,8 @@ class PostActivity : AppCompatActivity() {
         return builder.create()
     }
 
-    private fun getDate(): String{
+    @SuppressLint("SimpleDateFormat")
+    private fun getDate(): String {
         val calendar: Calendar = Calendar.getInstance()
         val currDateAndTime = SimpleDateFormat("dd-MM-yyyy-HH:mm:ss")
         saveCurrDateAndTime = currDateAndTime.format(calendar.time)
