@@ -140,18 +140,20 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         if(requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE && data != null){
+
+            val result: CropImage.ActivityResult = CropImage.getActivityResult(data)
+
+            // Possible bug again?
             val selfIntent = Intent(this@SettingsActivity,SettingsActivity::class.java)
             selfIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT // new?
             startActivity(selfIntent)
-
-            val result: CropImage.ActivityResult = CropImage.getActivityResult(data)
 
             progressBar.setTitle("Updating profile image")
             progressBar.show()
 
             if(resultCode == Activity.RESULT_OK){
                 val resultUri: Uri = result.uri
-                val filePath: StorageReference = userProfileImageRef.child(currUserId+".jpg")
+                val filePath: StorageReference = userProfileImageRef.child("$currUserId.jpg")
 
                 filePath.putFile(resultUri).addOnSuccessListener(this) {
                     filePath.downloadUrl.addOnSuccessListener(this) { uri: Uri ->
