@@ -181,7 +181,7 @@ class ChatActivity : AppCompatActivity() {
 
         messageAdapter = MessagesAdapter(usersMessagesList)
         messagesList = findViewById(R.id.messages_list)
-        this.linearLayoutManager = LinearLayoutManager(this)
+        linearLayoutManager = LinearLayoutManager(this)
         messagesList.setHasFixedSize(true)
         messagesList.layoutManager = linearLayoutManager
         messagesList.adapter = messageAdapter
