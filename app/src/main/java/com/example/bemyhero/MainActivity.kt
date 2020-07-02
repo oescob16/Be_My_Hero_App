@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                 if(dataSnapshot.exists()){
                     if(dataSnapshot.hasChild("fullname")) {
                         val fullName: String = dataSnapshot.child("fullname").value.toString()
-                        navProfileUsername.setText(fullName)
+                        navProfileUsername.text = fullName
                     } else {
                         Toast.makeText(this@MainActivity, "Profile name doesn't exist!", Toast.LENGTH_SHORT).show()
                     }
@@ -236,7 +236,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        fun readableDate(date: String): String {
+        private fun readableDate(date: String): String {
             val day = date.substring(0,10)
             val time = date.substring(11,16)
             return "  —  " + day.replace("-","/") + " at " + time
