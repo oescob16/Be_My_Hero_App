@@ -1,6 +1,8 @@
 package com.example.bemyhero
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -95,12 +97,14 @@ class ProfileActivity : AppCompatActivity() {
                     val fullNameData = dataSnapshot.child("fullname").value.toString()
                     val genderData = dataSnapshot.child("gender").value.toString()
 
-                    Glide.with(this@ProfileActivity)
-                        .load(profileImageData)
-                        .placeholder(R.drawable.profile)
-                        .skipMemoryCache(true)
-                        .diskCacheStrategy(DiskCacheStrategy.ALL)
-                        .into(profileImage)
+                    if(isValidGlideContext()){
+                        Glide.with(this@ProfileActivity)
+                            .load(profileImageData)
+                            .placeholder(R.drawable.profile)
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .into(profileImage)
+                    }
 
                     profileUsername.text = "@$userNameData"
                     profileBirthday.text = "Date of birth: $birthDayData"
@@ -114,6 +118,8 @@ class ProfileActivity : AppCompatActivity() {
             override fun onCancelled(databaseError: DatabaseError) {}
         })
     }
+
+    fun Context.isValidGlideContext() = this !is Activity || (!this.isDestroyed && !this.isFinishing)
 
     private fun initializeFirebaseFields(){
         mAuth = FirebaseAuth.getInstance()
