@@ -46,6 +46,8 @@ class ChatActivity : AppCompatActivity() {
 
     private lateinit var saveCurrDateAndTime: String
 
+    private lateinit var chatReceiverLastSeen: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
@@ -142,9 +144,20 @@ class ChatActivity : AppCompatActivity() {
         messageReceiverName = intent.extras?.get("FRIEND_FULL_NAME").toString()
 
         chatReceiverFullName.text = messageReceiverName
+
         rootRef.child("Users").child(messageReceiverID).addValueEventListener(object: ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if(dataSnapshot.exists()){
+                    val date: String = dataSnapshot.child("OnlineStatus").child("date").value.toString()
+                    val time: String = dataSnapshot.child("OnlineStatus").child("time").value.toString()
+                    val type: String = dataSnapshot.child("OnlineStatus").child("type").value.toString()
+                    if(type != "offline"){
+                        chatReceiverLastSeen.text = type
+                    }
+                    else {
+                        chatReceiverLastSeen.text = "Last Seen: $time, $date"
+                    }
+
                     val receiverProfileImage: String = dataSnapshot.child("profileimage").value.toString()
                     Glide.with(this@ChatActivity)
                         .load(receiverProfileImage)
@@ -177,6 +190,7 @@ class ChatActivity : AppCompatActivity() {
         actionBar?.customView = actionBarView
 
         chatReceiverFullName = findViewById(R.id.custom_profile_name)
+        chatReceiverLastSeen = findViewById(R.id.custom_user_last_seen)
         chatReceiverProfileImage = findViewById(R.id.custom_profile_image)
 
         messageAdapter = MessagesAdapter(usersMessagesList)
