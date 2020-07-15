@@ -1,5 +1,6 @@
 package com.example.bemyhero
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -17,6 +18,9 @@ import com.firebase.ui.database.FirebaseRecyclerOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.HashMap
 
 class FriendsActivity : AppCompatActivity() {
 
@@ -111,9 +115,9 @@ class FriendsActivity : AppCompatActivity() {
     class FriendsViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
         var mView: View = itemView
 
-        val friendsProfileImage: CircleImageView = mView.findViewById(R.id.find_users_profile_image)
-        val friendsFullName: TextView = mView.findViewById(R.id.find_user_full_name)
-        val friendsDate: TextView = mView.findViewById(R.id.find_user_status)
+        private val friendsProfileImage: CircleImageView = mView.findViewById(R.id.find_users_profile_image)
+        private val friendsFullName: TextView = mView.findViewById(R.id.find_user_full_name)
+        private val friendsDate: TextView = mView.findViewById(R.id.find_user_status)
 
         fun setInfo(friend: Friends, userName: String, userProfileImage: String){
             friendsFullName.text = userName
