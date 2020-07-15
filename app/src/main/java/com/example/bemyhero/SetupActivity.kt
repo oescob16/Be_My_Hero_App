@@ -2,6 +2,7 @@ package com.example.bemyhero
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -74,17 +75,20 @@ class SetupActivity : AppCompatActivity() {
             startActivityForResult(galleryIntent,galleryPick)
         }
 
-        userRef.addValueEventListener(object : ValueEventListener {
+        userRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if (dataSnapshot.exists()) {
                     if(dataSnapshot.hasChild("profileimage")){
                         val image: String = dataSnapshot.child("profileimage").value.toString()
-                        Glide.with(this@SetupActivity)
-                            .load(image)
-                            .placeholder(R.drawable.profile)
-                            .skipMemoryCache(true)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .into(profileImage)
+
+                        if(isValidGlideContext()) {
+                            Glide.with(this@SetupActivity)
+                                .load(image)
+                                .placeholder(R.drawable.profile)
+                                .skipMemoryCache(true)
+                                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                .into(profileImage)
+                        }
                     } else {
                         Toast.makeText(this@SetupActivity,"Profile image doesn't exist!",Toast.LENGTH_SHORT).show()
                     }
@@ -93,6 +97,8 @@ class SetupActivity : AppCompatActivity() {
             override fun onCancelled(databaseError: DatabaseError) {}
         })
     }
+
+    fun Context.isValidGlideContext() = this !is Activity || (!this.isDestroyed && !this.isFinishing)
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -124,7 +130,7 @@ class SetupActivity : AppCompatActivity() {
                         userRef.child("profileimage").setValue(downloadUrl).addOnCompleteListener { task ->
                             if(task.isSuccessful){
                                 val selfIntent = Intent(this@SetupActivity,SetupActivity::class.java)
-                                selfIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT) // New?
+                                selfIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
                                 startActivity(selfIntent)
 
                                 Toast.makeText(this@SetupActivity,"Profile image stored successfully to Firebase Database!",Toast.LENGTH_SHORT).show()
@@ -145,7 +151,7 @@ class SetupActivity : AppCompatActivity() {
         }
         if(data == null){
             val selfIntent = Intent(this@SetupActivity,SetupActivity::class.java)
-            selfIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            selfIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             startActivity(selfIntent)
         }
     }
