@@ -8,6 +8,7 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Log
 import android.view.MenuItem
 import android.widget.*
 import androidx.appcompat.widget.Toolbar
@@ -65,7 +66,7 @@ class PostActivity : AppCompatActivity() {
         setSupportActionBar(mToolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.setTitle("Update Post")
+        supportActionBar?.title = "Update Post"
 
         selectPostImage.setOnClickListener {
             openGallery()
@@ -136,7 +137,7 @@ class PostActivity : AppCompatActivity() {
 
     private fun savingPostInfoToDatabase(){
 
-        userRef.child(currUserId).addValueEventListener(object: ValueEventListener {
+        userRef.child(currUserId).addListenerForSingleValueEvent(object: ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 if(dataSnapshot.exists()){
                     val userFullName: String = dataSnapshot.child("fullname").getValue().toString()
