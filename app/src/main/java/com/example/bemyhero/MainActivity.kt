@@ -1,10 +1,12 @@
 package com.example.bemyhero
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.provider.ContactsContract
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -17,18 +19,30 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
+import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
 import de.hdodenhof.circleimageview.CircleImageView
-import kotlinx.android.synthetic.main.posts_layout.view.*
+import java.security.AccessController.getContext
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.HashMap
 
 
 class MainActivity : AppCompatActivity() {
@@ -51,8 +65,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var postsRef: DatabaseReference
     private lateinit var likesRef: DatabaseReference
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    private lateinit var googleSignInClient: GoogleSignInClient
 
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -245,6 +260,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(this,gso)
+
         val currentUser: FirebaseUser? =  mAuth.currentUser
         if(currentUser == null){
             SendUserToLoginActivity()
@@ -284,7 +306,6 @@ class MainActivity : AppCompatActivity() {
         startActivity(setupIntent)
         finish()
     }
-
 
     private fun SendUserToLoginActivity(){
         val loginIntent: Intent = Intent(this@MainActivity,LoginActivity::class.java)
@@ -340,15 +361,47 @@ class MainActivity : AppCompatActivity() {
             }
             R.id.nav_messages -> {
                 sendUserToFriendsActivity()
-                Toast.makeText(this,"Messages",Toast.LENGTH_SHORT).show()
             }
             R.id.nav_settings -> {
                 sendUserToSettingsActivity()
             }
             R.id.nav_logout -> {
+                updateOnlineStatus("offline")
                 mAuth.signOut()
+                googleSignOut()
                 SendUserToLoginActivity()
             }
         }
+    }
+
+    private fun googleSignOut(){
+        googleSignInClient.signOut()
+    }
+
+    private fun updateOnlineStatus(status: String){
+        val currDate: String = getDate()
+        val currTime: String = getTime()
+
+        val currStateMap = HashMap<String, String>()
+        currStateMap["date"] = currDate
+        currStateMap["time"] = currTime
+        currStateMap["type"] = status
+
+        userRef.child(currUserId).child("OnlineStatus")
+            .updateChildren(currStateMap as Map<String, Any>)
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private fun getDate(): String{
+        val calendar: Calendar = Calendar.getInstance()
+        val currDate = SimpleDateFormat("dd/MM/yyyy")
+        return currDate.format(calendar.time)
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private fun getTime(): String {
+        val calendar: Calendar = Calendar.getInstance()
+        val currTime = SimpleDateFormat("hh:mm a")
+        return currTime.format(calendar.time)
     }
 }
